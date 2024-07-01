@@ -10,6 +10,31 @@ export const comment = (() => {
     const owns = storage('owns');
     const session = storage('session');
 
+    const remove = async (button) => {
+        if (!confirm('Are you sure?')) {
+            return;
+        }
+
+        const id = button.getAttribute('data-uuid');
+
+        if (session.get('token')?.split('.').length === 3) {
+            owns.set(id, button.getAttribute('data-own'));
+        }
+
+        const btn = util.disableButton(button);
+
+        await request(HTTP_DELETE, '/api/comment/' + owns.get(id))
+            .token(session.get('token'))
+            .then((res) => {
+                if (res.data.status) {
+                    owns.unset(id);
+                    document.getElementById(id).remove();
+                }
+            });
+
+        btn.restore();
+    };
+
     const changeButton = (id, disabled) => {
         const buttonMethod = ['reply', 'edit', 'remove'];
 
@@ -213,31 +238,6 @@ export const comment = (() => {
                 comments.innerHTML = res.data.map((comment) => card.renderContent(comment)).join('');
                 res.data.map((c) => card.fetchTracker(c));
             });
-    };
-
-    const remove = async (button) => {
-        if (!confirm('Are you sure?')) {
-            return;
-        }
-
-        const id = button.getAttribute('data-uuid');
-
-        if (session.get('token')?.split('.').length === 3) {
-            owns.set(id, button.getAttribute('data-own'));
-        }
-
-        const btn = util.disableButton(button);
-
-        await request(HTTP_DELETE, '/api/comment/' + owns.get(id))
-            .token(session.get('token'))
-            .then((res) => {
-                if (res.data.status) {
-                    owns.unset(id);
-                    document.getElementById(id).remove();
-                }
-            });
-
-        btn.restore();
     };
 
     return {

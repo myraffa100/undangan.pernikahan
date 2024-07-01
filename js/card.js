@@ -166,10 +166,7 @@ export const card = (() => {
                 const result = res.cityName + ' - ' + res.regionName;
 
                 tracker.set(comment.ip, result);
-                const ipElement = document.getElementById(`ip-${comment.uuid}`);
-                if (ipElement) {
-                    ipElement.innerHTML = `<i class="fa-solid fa-location-dot me-1"></i>${util.escapeHtml(comment.ip)} <strong>${result}</strong>`;
-                }
+                document.getElementById(`ip-${comment.uuid}`).innerHTML = `<i class="fa-solid fa-location-dot me-1"></i>${util.escapeHtml(comment.ip)} <strong>${result}</strong>`;
             })
             .catch((err) => console.error(err));
     };
@@ -177,8 +174,7 @@ export const card = (() => {
     return {
         fetchTracker,
         renderLoading,
-        renderContent,
+        renderContent: (comment) => renderContent(comment, true),
         convertMarkdownToHTML
-    };
-
+    }
 })();
