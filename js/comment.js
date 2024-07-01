@@ -6,12 +6,11 @@ import { pagination } from './pagination.js';
 import { request, HTTP_GET, HTTP_POST, HTTP_DELETE, HTTP_PUT } from './request.js';
 
 export const comment = (() => {
-
     const owns = storage('owns');
     const session = storage('session');
 
     const remove = async (button) => {
-        if (!confirm('Are you sure?')) {
+        if (!confirm('Apakah Anda yakin?')) {
             return;
         }
 
@@ -93,13 +92,13 @@ export const comment = (() => {
 
         const name = document.getElementById('form-name');
         if (name.value.length == 0) {
-            alert('Please fill name');
+            alert('Silakan isi nama');
             return;
         }
 
         const presence = document.getElementById('form-presence');
         if (!id && presence && presence.value == "0") {
-            alert('Please select presence');
+            alert('Silakan pilih kehadiran');
             return;
         }
 
@@ -149,7 +148,7 @@ export const comment = (() => {
     };
 
     const cancel = (id) => {
-        if (document.getElementById(`form-inner-${id}`).value.length === 0 || confirm('Are you sure?')) {
+        if (document.getElementById(`form-inner-${id}`).value.length === 0 || confirm('Apakah Anda yakin?')) {
             changeButton(id, false);
             document.getElementById(`inner-${id}`).remove();
         }
@@ -168,11 +167,11 @@ export const comment = (() => {
         inner.classList.add('my-2');
         inner.id = `inner-${id}`;
         inner.innerHTML = `
-        <label for="form-inner-${id}" class="form-label">Reply</label>
-        <textarea class="form-control shadow-sm rounded-3 mb-2" id="form-inner-${id}" placeholder="Type reply comment"></textarea>
+        <label for="form-inner-${id}" class="form-label">Balas</label>
+        <textarea class="form-control shadow-sm rounded-3 mb-2" id="form-inner-${id}" placeholder="Ketik komentar balasan"></textarea>
         <div class="d-flex flex-wrap justify-content-end align-items-center mb-0">
-            <button style="font-size: 0.8rem;" onclick="comment.cancel('${id}')" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0 me-1">Cancel</button>
-            <button style="font-size: 0.8rem;" onclick="comment.send(this)" data-uuid="${id}" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0">Send</button>
+            <button style="font-size: 0.8rem;" onclick="comment.cancel('${id}')" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0 me-1">Batal</button>
+            <button style="font-size: 0.8rem;" onclick="comment.send(this)" data-uuid="${id}" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0">Kirim</button>
         </div>`;
 
         document.getElementById(`button-${id}`).insertAdjacentElement('afterend', inner);
@@ -187,7 +186,7 @@ export const comment = (() => {
 
         changeButton(id, true);
         const tmp = button.innerText;
-        button.innerText = 'Loading..';
+        button.innerText = 'Memuat..';
 
         const status = await request(HTTP_GET, '/api/comment/' + id)
             .token(session.get('token'))
@@ -204,10 +203,10 @@ export const comment = (() => {
                 <option value="1" ${status.data.presence ? 'selected' : ''}>Hadir</option>
                 <option value="2" ${status.data.presence ? '' : 'selected'}>Berhalangan</option>
             </select>` : ''}
-            <textarea class="form-control shadow-sm rounded-3 mb-2" id="form-inner-${id}" placeholder="Type update comment"></textarea>
+            <textarea class="form-control shadow-sm rounded-3 mb-2" id="form-inner-${id}" placeholder="Ketik komentar yang diperbarui"></textarea>
             <div class="d-flex flex-wrap justify-content-end align-items-center mb-0">
-                <button style="font-size: 0.8rem;" onclick="comment.cancel('${id}')" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0 me-1">Cancel</button>
-                <button style="font-size: 0.8rem;" onclick="comment.update(this)" data-uuid="${id}" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0">Update</button>
+                <button style="font-size: 0.8rem;" onclick="comment.cancel('${id}')" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0 me-1">Batal</button>
+                <button style="font-size: 0.8rem;" onclick="comment.update(this)" data-uuid="${id}" class="btn btn-sm btn-outline-${theme.isDarkMode('light', 'dark')} rounded-3 py-0">Perbarui</button>
             </div>`;
 
             document.getElementById(`button-${id}`).insertAdjacentElement('afterend', inner);
@@ -215,6 +214,23 @@ export const comment = (() => {
         }
 
         button.innerText = tmp;
+    };
+
+    const showLatestComments = async () => {
+        card.renderLoading();
+
+        await request(HTTP_GET, `/api/comment/latest`)
+            .token(session.get('token'))
+            .then((res) => {
+                if (res.code !== 200) {
+                    return;
+                }
+
+                const comments = document.getElementById('comments');
+                comments.innerHTML = '';
+                res.data.map((comment) => card.renderContent(comment)).join('');
+                res.data.map((c) => card.fetchTracker(c));
+            });
     };
 
     const comment = async () => {
@@ -235,7 +251,8 @@ export const comment = (() => {
                     return;
                 }
 
-                comments.innerHTML = res.data.map((comment) => card.renderContent(comment)).join('');
+                comments.innerHTML = '';
+                res.data.map((comment) => card.renderContent(comment)).join('');
                 res.data.map((c) => card.fetchTracker(c));
             });
     };
@@ -249,5 +266,6 @@ export const comment = (() => {
         update,
         comment,
         renderLoading: card.renderLoading,
-    }
+        showLatestComments,
+    };
 })();
