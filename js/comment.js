@@ -34,6 +34,8 @@ export const comment = (() => {
         btn.restore();
     };
 
+    
+
     const changeButton = (id, disabled) => {
         const buttonMethod = ['reply', 'edit', 'remove'];
 

@@ -23,9 +23,15 @@ export const storage = (table) => {
 
         localStorage.removeItem(table);
         localStorage.setItem(table, JSON.stringify(storage));
+
+    
     };
 
+  
+
     const has = (key) => Object.keys(get()).includes(String(key));
+
+
 
     return {
         get,
